@@ -2,35 +2,18 @@
 // 4/2/24
 // The core of the raytracer
 
-#include "vec3.h"
-#include "color.h"
-#include "ray.h"
+#include "offlinert.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
-#include <iostream>
+color ray_color(const ray& r, const hittable& world){
+    // OBJECTS
+    hit_record rec;
+    if(world.hit(r, interval(0, infinity), rec))
+        return 0.5 * (rec.n_hat + color(1, 1, 1));
 
-double hit_sphere(const point3& center, double radius, const ray& r){
-    vec3 origin_to_center = center - r.origin();
-    auto a = dot(r.direction(), r.direction());
-    auto b = -2.0 * dot(r.direction(), origin_to_center);
-    auto c = dot(origin_to_center, origin_to_center) - radius * radius;
-    auto discr = b * b - 4.0 * a * c;
-
-    if(discr < 0)
-        return -1.0;
-    return (-b - sqrt(discr)) / (2.0 * a);
-}
-
-color ray_color(const ray& r){
-    // t = how far we had to proceed down the ray to hit the sphere
-    vec3 center = point3(0, 0, -1);
-    double radius = 0.5;
-    double t = hit_sphere(center, radius, r);
-    if(t > 0){
-        // Normalize vector btwn sphere center and intersection point
-        vec3 n_hat = normalize(r.at(t) - center);
-        return 0.5 * vec3(n_hat.x() + 1, n_hat.y() + 1, n_hat.z() + 1);
-    }
-
+    // SKY
     vec3 unit_direction = normalize(r.direction());
     auto a = 0.5*(unit_direction.y() + 1.0);
     return color(0, 0, 1) * a + (1 - a) * color(1, 1, 1);
@@ -45,6 +28,12 @@ int main(){
     // Calculate image height
     int image_height = (int)(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
+
+    // ======= WORLD =======
+    hittable_list world;
+
+    world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
+    world.add(make_shared<sphere>(point3(0, -100.5, -1), 100)); // Ground
 
     // ======= CAMERA =======
     auto focal_length = 1.0;
@@ -80,7 +69,7 @@ int main(){
             vec3 cur_ray_dir = cur_pixel_center - camera_pos;
             ray r(camera_pos, cur_ray_dir);
 
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             write_color(std::cout, pixel_color);
         }
         std::cout << "\n";

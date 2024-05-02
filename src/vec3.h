@@ -1,11 +1,6 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#include <cmath>
-#include <iostream>
-
-using std::sqrt;
-
 class vec3 {
     public:
         // The elements of this vector
@@ -25,7 +20,7 @@ class vec3 {
         double b() const {return e[2]; }
 
         // Operators
-        vec3 operator-() { return vec3(-x(), -y(), -z()); }
+        vec3 operator-() const { return vec3(-x(), -y(), -z()); }
         double operator[](int i) const { return e[i]; } // Read-only overload used on RHS of assignment
         double& operator[](int i) { return e[i]; } // Read-write overload used on LHS of assignment
 
