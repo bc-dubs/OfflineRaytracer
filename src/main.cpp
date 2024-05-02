@@ -8,7 +8,29 @@
 
 #include <iostream>
 
+double hit_sphere(const point3& center, double radius, const ray& r){
+    vec3 origin_to_center = center - r.origin();
+    auto a = dot(r.direction(), r.direction());
+    auto b = -2.0 * dot(r.direction(), origin_to_center);
+    auto c = dot(origin_to_center, origin_to_center) - radius * radius;
+    auto discr = b * b - 4.0 * a * c;
+
+    if(discr < 0)
+        return -1.0;
+    return (-b - sqrt(discr)) / (2.0 * a);
+}
+
 color ray_color(const ray& r){
+    // t = how far we had to proceed down the ray to hit the sphere
+    vec3 center = point3(0, 0, -1);
+    double radius = 0.5;
+    double t = hit_sphere(center, radius, r);
+    if(t > 0){
+        // Normalize vector btwn sphere center and intersection point
+        vec3 n_hat = normalize(r.at(t) - center);
+        return 0.5 * vec3(n_hat.x() + 1, n_hat.y() + 1, n_hat.z() + 1);
+    }
+
     vec3 unit_direction = normalize(r.direction());
     auto a = 0.5*(unit_direction.y() + 1.0);
     return color(0, 0, 1) * a + (1 - a) * color(1, 1, 1);
