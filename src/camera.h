@@ -14,6 +14,7 @@ class camera {
         // Image fields
         double aspect_ratio = 1.0;
         int image_width = 100;
+        int samples_per_pixel = 10;
 
         void render(const hittable& world){
             initialize();
@@ -27,11 +28,10 @@ class camera {
             for(int y = 0; y < image_height; y++){
                 std::clog << "\rRows remaining:" << (image_height - y) << std::flush;
                 for(int x = 0; x < image_width; x++){
-                    point3 cur_pixel_center = pixel00_pos + x * delta_u + y * delta_v;
-                    vec3 cur_ray_dir = cur_pixel_center - camera_pos;
-                    ray r(camera_pos, cur_ray_dir);
-
-                    color pixel_color = ray_color(r, world);
+                    color pixel_color(0, 0, 0);
+                    for(int s = 0; s < samples_per_pixel; s++){
+                        pixel_color += sample_partition * ray_color(get_ray(x, y), world);
+                    }
                     write_color(std::cout, pixel_color);
                 }
                 std::cout << "\n";
@@ -60,6 +60,8 @@ class camera {
         // Worldspace positions for the top left of the viewport and the pixel grid
         point3 viewport_top_left;
         point3 pixel00_pos;
+        // How much of the total color each ray should contribute
+        double sample_partition;
 
         void initialize(){
             // Calculate image height
@@ -81,6 +83,23 @@ class camera {
                 - viewport_u / 2 
                 - viewport_v / 2;
             pixel00_pos = viewport_top_left + delta_u / 2 + delta_v / 2;
+
+            sample_partition = 1.0/samples_per_pixel;
+        }
+
+        ray get_ray(int x, int y) const{
+            vec3 offset = sample_square();
+
+            point3 pixel_sample = pixel00_pos 
+                + (x + offset.x()) * delta_u 
+                + (y + offset.y()) * delta_v;
+
+            vec3 ray_dir = pixel_sample - camera_pos;
+            return ray(camera_pos, ray_dir);
+        }
+
+        vec3 sample_square() const{
+            return vec3(random_double(), random_double(), 0) - vec3(0.5, 0.5, 0);
         }
 
         color ray_color(const ray& r, const hittable& world){
