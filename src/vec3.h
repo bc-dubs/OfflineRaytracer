@@ -51,6 +51,12 @@ class vec3 {
             return x() * x() + y() * y() + z() * z();
         }
 
+        bool is_near_zero() const {
+            // Are all 3 coordinates very close to zero?
+            auto s = 1e-8; // Very small number
+            return (fabs(x()) < s) && (fabs(y()) < s) && (fabs(z()) < s);
+        }
+
         static vec3 random() {
             return vec3(random_double(), random_double(), random_double());
         }
@@ -133,6 +139,10 @@ inline vec3 random_on_hemisphere(const vec3& n){
     vec3 v = random_unit_vector();
     v = (dot(v, n) < 0)? -v : v;
     return v;
+}
+
+inline vec3 reflect(const vec3& v, const vec3& n){
+    return v - 2*dot(v,n)*n;
 }
 
 #endif

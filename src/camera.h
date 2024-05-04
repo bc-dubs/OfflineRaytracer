@@ -3,6 +3,7 @@
 
 #include "offlinert.h"
 #include "hittable.h"
+#include "material.h"
 
 // Camera class sends rays into the world
 
@@ -16,6 +17,7 @@ class camera {
         int image_width = 100;
         int samples_per_pixel = 10;
         int max_recursion_depth = 10;
+        point3 camera_pos;
 
         void render(const hittable& world){
             initialize();
@@ -49,7 +51,6 @@ class camera {
         double focal_length = 1.0;
         double viewport_height = 2.0;
         double viewport_width;
-        point3 camera_pos = point3(0, 0, 0);
 
         // Pixel fields
         // Worldspace vectors along the axes of the viewport
@@ -73,14 +74,14 @@ class camera {
             viewport_width = viewport_height * ((double)image_width/image_height);
 
             // Calculate other viewport variables
-            viewport_u = vec3(viewport_width, 0, 0);
+            viewport_u = vec3(0, 0, viewport_width);
             viewport_v = vec3(0, -viewport_height, 0);
 
             delta_u = viewport_u/image_width;
             delta_v = viewport_v/image_height;
 
             viewport_top_left = 
-                camera_pos + focal_length * vec3(0, 0, -1) 
+                camera_pos + focal_length * vec3(-1, 0, 0) 
                 - viewport_u / 2 
                 - viewport_v / 2;
             pixel00_pos = viewport_top_left + delta_u / 2 + delta_v / 2;
@@ -111,14 +112,17 @@ class camera {
             // OBJECTS
             hit_record rec;
             if(world.hit(r, interval(0.001, infinity), rec)){
-                vec3 diffuse_direction = rec.n_hat + random_unit_vector();
-                return 0.5 * ray_color(ray(rec.loc, diffuse_direction), depth-1, world);
+                ray new_ray;
+                color attenuation;
+                if(rec.mat->scatter(r, rec, attenuation, new_ray))
+                    return attenuation * ray_color(new_ray, depth-1, world);
+                return color(0,0,0);
             }
 
             // SKY
             vec3 unit_direction = normalize(r.direction());
             auto a = 0.5*(unit_direction.y() + 1.0);
-            return color(0, 0, 1) * a + (1 - a) * color(1, 1, 1);
+            return color(0.5, 0.7, 1.0) * a + (1 - a) * color(1, 1, 1);
         }
 };
 
