@@ -856,4 +856,5 @@ CMakeFiles/inOneWeekend.dir/src/main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/array \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/temp_value.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__split_buffer \
-  /Users/ben/Dropbox/Documents/2024\ Spring\ Schoolwork/OfflineRaytracer/src/sphere.h
+  /Users/ben/Dropbox/Documents/2024\ Spring\ Schoolwork/OfflineRaytracer/src/sphere.h \
+  /Users/ben/Dropbox/Documents/2024\ Spring\ Schoolwork/OfflineRaytracer/src/camera.h
