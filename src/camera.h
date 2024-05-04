@@ -15,6 +15,7 @@ class camera {
         double aspect_ratio = 1.0;
         int image_width = 100;
         int samples_per_pixel = 10;
+        int max_recursion_depth = 10;
 
         void render(const hittable& world){
             initialize();
@@ -26,11 +27,11 @@ class camera {
 
             // Image body
             for(int y = 0; y < image_height; y++){
-                std::clog << "\rRows remaining:" << (image_height - y) << std::flush;
+                std::clog << "\rRows remaining: " << (image_height - y) << std::flush;
                 for(int x = 0; x < image_width; x++){
                     color pixel_color(0, 0, 0);
                     for(int s = 0; s < samples_per_pixel; s++){
-                        pixel_color += sample_partition * ray_color(get_ray(x, y), world);
+                        pixel_color += sample_partition * ray_color(get_ray(x, y), max_recursion_depth, world);
                     }
                     write_color(std::cout, pixel_color);
                 }
@@ -102,11 +103,17 @@ class camera {
             return vec3(random_double(), random_double(), 0) - vec3(0.5, 0.5, 0);
         }
 
-        color ray_color(const ray& r, const hittable& world){
+        color ray_color(const ray& r, int depth, const hittable& world){
+            // CHECK MAX RECURSION
+            if(depth <= 0)
+                return color(1, 1, 1);
+
             // OBJECTS
             hit_record rec;
-            if(world.hit(r, interval(0, infinity), rec))
-                return 0.5 * (rec.n_hat + color(1, 1, 1));
+            if(world.hit(r, interval(0.001, infinity), rec)){
+                vec3 diffuse_direction = rec.n_hat + random_unit_vector();
+                return 0.5 * ray_color(ray(rec.loc, diffuse_direction), depth-1, world);
+            }
 
             // SKY
             vec3 unit_direction = normalize(r.direction());

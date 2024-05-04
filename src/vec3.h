@@ -42,12 +42,21 @@ class vec3 {
             return *this *= 1/scalar; // not actually a copy of the data, lvalue shenanigans??
         };
 
+        // Functions
         double length() const { // const = does not edit any part of its enclosing object
             return sqrt(lengthSquared());
         }
 
         double lengthSquared() const {
             return x() * x() + y() * y() + z() * z();
+        }
+
+        static vec3 random() {
+            return vec3(random_double(), random_double(), random_double());
+        }
+
+        static vec3 random(double min, double max) {
+            return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
         }
 };
 
@@ -103,6 +112,27 @@ inline vec3 cross(const vec3& u, const vec3& v){
 
 inline vec3 normalize(const vec3& v){
     return v / v.length();
+}
+inline vec3 random_unit_vector(){
+    // Using spherical coordinates
+    double theta = 2 * pi * random_double();
+    double phi = 2 * pi * random_double();
+
+    return vec3(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
+}
+/*
+inline vec3 random_unit_vector() {
+    while (true) {
+        auto p = vec3::random(-1,1);
+        if (p.lengthSquared() < 1)
+            return normalize(p);
+    }
+}*/
+
+inline vec3 random_on_hemisphere(const vec3& n){
+    vec3 v = random_unit_vector();
+    v = (dot(v, n) < 0)? -v : v;
+    return v;
 }
 
 #endif
